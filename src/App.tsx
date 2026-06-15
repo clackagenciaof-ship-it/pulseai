@@ -1,3 +1,3 @@
-import AppPremium from './AppV8'
+import AppFinal from './AppFinal'
 
-export default AppPremium
+export default AppFinal
