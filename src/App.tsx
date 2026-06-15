@@ -1,5 +1,4 @@
 import './ui.css'
-import './commercial.css'
-import AppCommercial from './AppCommercial'
+import AppFinal from './AppFinal'
 
-export default AppCommercial
+export default AppFinal
