@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 import { categories, experiences } from './data/seed'
 import type { Category, Experience } from './types'
 
-type Tab = 'mapa' | 'evento' | 'transporte' | 'perfil'
+type Tab = 'inicio' | 'mapa' | 'evento' | 'transporte' | 'perfil'
 type Modal = 'baixar' | 'negocio' | 'motorista' | 'admin' | 'painel' | 'corrida' | 'compra' | null
 type MenuItem = Experience['menu'][number]
 type EventOption = Experience & { location: string }
@@ -85,7 +85,7 @@ function categoryFromText(text: string): Category {
 export default function AppFinal() {
   const [cat, setCat] = useState<Category>('Bombando')
   const [selected, setSelected] = useState(0)
-  const [tab, setTab] = useState<Tab>('mapa')
+  const [tab, setTab] = useState<Tab>('inicio')
   const [q, setQ] = useState('Will, onde é hoje?')
   const [ride, setRide] = useState('Só ida')
   const [react, setReact] = useState('')
@@ -98,9 +98,9 @@ export default function AppFinal() {
   function abrirApp() {
     setCat('Bombando')
     setSelected(0)
-    setTab('mapa')
+    setTab('inicio')
     setPanel(false)
-    setQ('Bombando agora')
+    setQ('Will, onde é hoje?')
     scroll('top')
   }
 
@@ -186,13 +186,14 @@ function Phone({ ev, options, selected, setSelected, cat, choose, tab, setTab, q
   return <aside className="phone"><div className="phone-inner">
     <div className="phone-top"><strong>PulseAí</strong><button className="menu-icon" onClick={() => setPanel(true)}>☰</button></div>
     <div className="phone-view">
-      {panel && <div className="quick-panel"><h3>Painel <span>pulsa agora.</span></h3><button onClick={() => { setPanel(false); setTab('mapa') }}>🔎 Descobrir agora</button><button onClick={() => { setPanel(false); setTab('evento') }}>🎟️ Evento em destaque</button><button onClick={() => { setPanel(false); setTab('transporte') }}>🚘 Programar transporte</button><button onClick={abrirWill}>💬 Falar com Will</button><button onClick={() => { setPanel(false); setTab('perfil') }}>👤 Meu perfil</button><button onClick={() => open('baixar')}>✨ Pulse+ benefícios</button><button onClick={() => setPanel(false)}>Fechar painel</button></div>}
+      {panel && <div className="quick-panel"><h3>Painel <span>pulsa agora.</span></h3><button onClick={() => { setPanel(false); setTab('inicio') }}>🏠 Início do app</button><button onClick={() => { setPanel(false); setTab('mapa') }}>🔎 Descobrir agora</button><button onClick={() => { setPanel(false); setTab('evento') }}>🎟️ Evento em destaque</button><button onClick={() => { setPanel(false); setTab('transporte') }}>🚘 Programar transporte</button><button onClick={abrirWill}>💬 Falar com Will</button><button onClick={() => { setPanel(false); setTab('perfil') }}>👤 Meu perfil</button><button onClick={() => open('baixar')}>✨ Pulse+ benefícios</button><button onClick={() => setPanel(false)}>Fechar painel</button></div>}
+      {tab === 'inicio' && <section className="phone-section app-start"><div className="intro-card"><small>Onde a cidade</small><span>pulsa agora.</span><b>Abra o mapa, pergunte ao Will ou escolha uma categoria.</b></div><div className="start-grid"><button onClick={() => setTab('mapa')}>🗺️ Explorar mapa</button><button onClick={abrirWill}>💬 Falar com Will</button><button onClick={() => setTab('evento')}>🎟️ Ver evento</button><button onClick={() => setTab('transporte')}>🚘 Transporte</button></div><h4>Comece por uma vibe</h4><div className="category-grid">{categories.map((c) => <button key={c} className={c === cat ? 'active' : ''} onClick={() => choose(c)}><span>{icons[c]}</span>{c}</button>)}</div><div className="will-card"><b>Hoje o PulseAí recomenda</b><p><strong>{ev.title}</strong><br />{ev.location} • {ev.distance}</p></div></section>}
       {tab === 'mapa' && <section className="phone-section"><div className="intro-card"><small>Onde a cidade</small><span>pulsa agora.</span><b>Descubra o que está rolando em tempo real</b></div><div className="search phone-search"><span>🔎</span><input value={q} onChange={(e) => setQ(e.target.value)} onFocus={() => setTab('mapa')} /><button onClick={() => setQ('')}>×</button><button onClick={will}>🔎</button></div><div className="quick-asks">{quickQuestions.map((text) => <button key={text} onClick={() => applyWill(text)}>{text}</button>)}</div><div className="category-grid">{categories.map((c) => <button key={c} className={c === cat ? 'active' : ''} onClick={() => choose(c)}><span>{icons[c]}</span>{c}</button>)}</div><div className="mini-map"><i className="pin pin-a" /><i className="pin pin-b" /><i className="pin pin-c" /><i className="pin pin-d" /><small>{cat} agora</small></div><div className="row-title"><strong>Acontecendo agora</strong><small>{ev.location} • {ev.distance}</small></div><div className="event-options">{options.map((item, index) => <button key={item.id} className={index === selected ? 'active' : ''} onClick={() => setSelected(index)}><b>{item.title}</b><span>{item.location} • {item.distance}</span><small>{item.schedule}</small></button>)}</div><div className="will-card"><b>Will responde</b><p><strong>{ev.title}</strong><br />{ev.description}</p></div><div className="actions"><button className="primary" onClick={() => setTab('evento')}>Ver evento</button><button className="ghost" onClick={() => setTab('transporte')}>Programar transporte</button></div></section>}
       {tab === 'evento' && <section className="phone-section"><div className="photo-card" style={{ background: ev.imageGradient }}><span>{ev.schedule}</span></div><h3>{ev.title}</h3><p className="location-line">📍 {ev.location} • {ev.distance}</p><p>{ev.description}</p><div className="phone-metrics"><article><small>Lotação</small><b>{ev.crowd}%</b></article><article><small>Vibe</small><b>{ev.vibe}</b></article><article><small>Cashback</small><b>{ev.cashback}%</b></article><article><small>Check-ins</small><b>{ev.checkins}</b></article></div><h4>Outras opções em {cat}</h4><div className="event-options compact-options">{options.map((item, index) => <button key={item.id} className={index === selected ? 'active' : ''} onClick={() => setSelected(index)}><b>{item.title}</b><span>{item.location}</span></button>)}</div><h4>Cardápio, combos e bebidas</h4><div className="phone-menu">{ev.menu.map((i) => <button key={i.id} onClick={() => addMenu(i)}><span>{i.emoji}</span><b>{i.name}</b><em>{i.price}</em></button>)}</div><button className="primary full" onClick={() => open('compra')}>Ver lista / reservar</button><h4>Reagir à vibe</h4><div className="reaction-list">{vibes.map((v) => <button key={v} className={react === v ? 'active' : ''} onClick={() => setReact(v)}>{v}</button>)}</div><button className="secondary full" onClick={() => alert(react ? 'Reação enviada: ' + react : 'Escolha uma reação antes de enviar.')}>Enviar reação</button></section>}
       {tab === 'transporte' && <section className="phone-section"><div className="will-card"><b>Seu plano de mobilidade</b><p>Escolha só ida, só volta ou ida + volta. Ao tocar, você preenche origem, destino, nome e preferência de veículo.</p></div><div className="ride-options">{['Só ida', 'Só volta', 'Ida + volta'].map((r) => <button key={r} className={ride === r ? 'active' : ''} onClick={() => abrirCorrida(r)}>{r}</button>)}</div><div className="will-card"><b>Resumo da solicitação</b><p>Origem: minha localização<br />Destino: {ev.title}<br />Local: {ev.location}<br />Tipo: {ride}</p></div><button className="primary full" onClick={() => abrirCorrida(ride)}>Solicitar agora</button></section>}
       {tab === 'perfil' && <section className="phone-section"><div className="profile-card"><div className="avatar">W</div><h3>Will</h3><p>Perfil privado com nome, telefone, endereço residencial, preferências, pontos e histórico quando houver.</p></div><div className="phone-metrics two"><article><small>Pontos</small><b>320</b></article><article><small>Cashback</small><b>R$ 18</b></article></div></section>}
     </div>
-    <div className="phone-tabs"><button className={tab === 'mapa' ? 'tab-on' : ''} onClick={() => setTab('mapa')}><span>🗺️</span>Mapa</button><button className={tab === 'evento' ? 'tab-on' : ''} onClick={() => setTab('evento')}><span>🎟️</span>Evento</button><button className={tab === 'transporte' ? 'tab-on' : ''} onClick={() => setTab('transporte')}><span>🚘</span>Transporte</button><button className={tab === 'perfil' ? 'tab-on' : ''} onClick={() => setTab('perfil')}><span>👤</span>Perfil</button></div>
+    <div className="phone-tabs"><button className={tab === 'mapa' || tab === 'inicio' ? 'tab-on' : ''} onClick={() => setTab('mapa')}><span>🗺️</span>Mapa</button><button className={tab === 'evento' ? 'tab-on' : ''} onClick={() => setTab('evento')}><span>🎟️</span>Evento</button><button className={tab === 'transporte' ? 'tab-on' : ''} onClick={() => setTab('transporte')}><span>🚘</span>Transporte</button><button className={tab === 'perfil' ? 'tab-on' : ''} onClick={() => setTab('perfil')}><span>👤</span>Perfil</button></div>
   </div></aside>
 }
 
