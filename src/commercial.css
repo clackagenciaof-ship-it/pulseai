@@ -1,2 +1,15 @@
 body{margin:0}
 .commercial-shell{min-height:100vh;background:#050711;color:white}
+.commercial-topbar{display:flex;justify-content:space-between;gap:20px;padding:18px 7vw;background:#050711;border-bottom:1px solid rgba(255,255,255,.13)}
+.brand{display:flex;align-items:center;gap:12px;background:transparent;border:0;color:white;font-size:1.15rem;font-weight:950}
+.logo{width:42px;height:42px;border-radius:13px;background:linear-gradient(135deg,#22e7d7,#62b8ff,#8b5cf6,#ff4e96)}
+nav{display:flex;gap:10px;flex-wrap:wrap}button{cursor:pointer}
+.commercial-topbar nav button,.ghost,.primary,.secondary,.download-top{border-radius:999px;border:1px solid rgba(255,255,255,.14);padding:12px 18px;color:white;font-weight:900;background:rgba(255,255,255,.07)}
+.primary{background:linear-gradient(90deg,#22e7d7,#62b8ff);color:#041014;border:0}.secondary,.download-top{background:linear-gradient(90deg,#ff4e96,#8b5cf6);border:0}
+.commercial-hero,.workspace{padding:70px 10vw}.commercial-hero{display:grid;grid-template-columns:1fr .8fr;gap:50px;align-items:center}
+.hero-copy h1{font-size:clamp(4rem,8vw,7rem);line-height:.9;letter-spacing:-.08em;margin:0 0 25px}
+.hero-copy h1 span,.panel-title h2 span{background:linear-gradient(90deg,#22e7d7,#62b8ff,#8b5cf6,#ff4e96);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero-copy p,.panel-title p,.platform-card p{color:#d8ddf3;line-height:1.65}.actions{display:flex;gap:12px;flex-wrap:wrap;margin:22px 0}
+.stats,.dashboard-grid,.grid{display:grid;gap:18px}.stats{grid-template-columns:repeat(3,1fr)}
+.stats article,.dashboard-grid article,.panel-card,.platform-card,.event-card,.user-badge{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.13);border-radius:26px;padding:24px}
+.grid.two{grid-template-columns:repeat(2,1fr)}.grid.three{grid-template-columns:repeat(3,1fr)}
