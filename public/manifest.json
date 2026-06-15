@@ -1,0 +1,14 @@
+{
+  "name": "PulseAi",
+  "short_name": "PulseAi",
+  "description": "Onde a cidade pulsa agora.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#090A16",
+  "theme_color": "#090A16",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "./icon.svg", "sizes": "512x512", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
