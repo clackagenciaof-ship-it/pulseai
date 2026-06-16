@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import AppFinal from './AppFinal'
 
-type Modal = 'parceiro' | 'motorista' | 'usuario' | 'admin' | null
+type Modal = 'quemSai' | 'parceiro' | 'motorista' | 'usuario' | 'admin' | null
 
 type Evento = { id: string; negocio: string; dono: string; whats: string; nome: string; categoria: string; data: string; endereco: string; foto?: string; desc: string; genero: string; ambiente: string; lotacao: string; vibe: string; cashback: string; ingresso: string; combos: string; bebidas: string; promocoes: string; cardapio: string; alcance: number; views: number; checkins: number; cliques: number; vendas: number; reacoes: number }
 type Motorista = { id: string; nome: string; contato: string; veiculo: string; placa: string; cidade: string; disponibilidade: string; online: boolean }
@@ -19,11 +19,14 @@ export default function AppPlus() {
   useEffect(() => { localStorage.setItem('pulseai_plus', JSON.stringify(db)) }, [db])
   useEffect(() => {
     const h = (ev: MouseEvent) => {
-      const b = (ev.target as HTMLElement).closest('button'); const t = b?.textContent || ''; if (!b) return
-      if (t.includes('Para negócios') || t.includes('Quero cadastrar meu negócio')) { ev.preventDefault(); ev.stopPropagation(); setModal('parceiro') }
-      if (t.includes('Cadastro de motorista') || t.includes('Quero me cadastrar como motorista')) { ev.preventDefault(); ev.stopPropagation(); setModal('motorista') }
-      if (t.trim() === 'Perfil' || t.includes('Meu perfil')) { ev.preventDefault(); ev.stopPropagation(); setModal('usuario') }
-      if (t.includes('Admin')) { ev.preventDefault(); ev.stopPropagation(); setModal('admin') }
+      const b = (ev.target as HTMLElement).closest('button');
+      const t = b?.textContent || '';
+      if (!b) return
+      if (t.includes('Para quem sai')) { ev.preventDefault(); ev.stopPropagation(); setModal('quemSai'); return }
+      if (t.includes('Para negócios') || t.includes('Quero cadastrar meu negócio')) { ev.preventDefault(); ev.stopPropagation(); setModal('parceiro'); return }
+      if (t.includes('Cadastro de motorista') || t.includes('Quero me cadastrar como motorista')) { ev.preventDefault(); ev.stopPropagation(); setModal('motorista'); return }
+      if (t.trim() === 'Perfil' || t.includes('Meu perfil')) { ev.preventDefault(); ev.stopPropagation(); setModal('usuario'); return }
+      if (t.includes('Admin')) { ev.preventDefault(); ev.stopPropagation(); setModal('admin'); return }
     }
     document.addEventListener('click', h, true); return () => document.removeEventListener('click', h, true)
   }, [])
@@ -32,11 +35,87 @@ export default function AppPlus() {
 
 function Shell({ title, close, children }: { title: string; close: () => void; children: React.ReactNode }) { return <div className="modal-back"><div className="modal-card" style={{ maxWidth: 1040, maxHeight: '88vh', overflow: 'auto' }}><div className="row-title"><strong>{title}</strong><button className="ghost" onClick={close}>Fechar</button></div>{children}</div></div> }
 
+function QuemSai({ close }: { close: () => void }) {
+  return <Shell title="Para quem sai" close={close}><div style={{ padding: 8 }}>
+    <p style={{ fontWeight: 600 }}>Descubra mais rápido. Escolha melhor. Chegue mais fácil.</p>
+    <p>O app mostra o que está acontecendo agora, filtra por música, ambiente e vibe, exibe lotação estimada, cardápio, promoções, combos, compra antecipada e transporte.</p>
+    <div className="public-cards" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12, marginTop: 12 }}>
+      {['Explorar agora', 'Mapa ao vivo', 'Falar com Will', 'Eventos e gastronomia', 'Favoritos', 'Transporte'].map((c) => <article key={c} style={{ borderRadius: 12, padding: 12, background: 'linear-gradient(135deg,#0f0f12,#121216)' }}><h4>{c}</h4></article>)}
+    </div>
+    <div style={{ display: 'flex', gap: 8, marginTop: 18 }}>
+      <button className="primary">Explorar no app</button>
+      <button className="secondary">Quero baixar</button>
+      <button className="ghost">Criar perfil</button>
+    </div>
+  </div></Shell>
+}
+
 function Parceiro({ db, setDb, close }: { db: Db; setDb: (d: Db) => void; close: () => void }) {
   const [login, setLogin] = useState(false); const [foto, setFoto] = useState('')
-  const [f, setF] = useState({ negocio: '', dono: '', whats: '', senha: '', nome: '', categoria: 'Bombando', data: '', endereco: '', desc: '', genero: '', ambiente: '', lotacao: '60', vibe: 'Energia Alta', cashback: '5', ingresso: 'Reserva', combos: '', bebidas: '', promocoes: '', cardapio: '' })
+  const [f, setF] = useState({ negocio: '', dono: '', whats: '', senha: '', nome: '', categoria: 'Bar / Pub', data: '', endereco: '', desc: '', genero: '', ambiente: '', lotacao: '60', vibe: 'Energia Alta', cashback: '5', ingresso: 'Reserva', combos: '', bebidas: '', promocoes: '', cardapio: '' })
   const publicar = () => { if (!f.negocio || !f.nome || !f.endereco) return alert('Preencha negócio, evento e endereço.'); const e: Evento = { id: id(), foto, ...f, alcance: 900 + Math.floor(Math.random() * 900), views: 300 + Math.floor(Math.random() * 600), checkins: 40 + Math.floor(Math.random() * 120), cliques: 80 + Math.floor(Math.random() * 180), vendas: 8 + Math.floor(Math.random() * 40), reacoes: 60 + Math.floor(Math.random() * 180) }; setDb({ ...db, eventos: [e, ...db.eventos] }); alert('Evento publicado. Ele aparece na Área do usuário desta versão piloto.') }
-  return <Shell title="Área do parceiro / Painel do estabelecimento" close={close}>{!login ? <div className="form-grid"><div><h3>Login do estabelecimento</h3><input placeholder="Proprietário / dono" value={f.dono} onChange={e => setF({ ...f, dono: e.target.value })} /><input placeholder="Nome do negócio" value={f.negocio} onChange={e => setF({ ...f, negocio: e.target.value })} /><input placeholder="WhatsApp de recebimento" value={f.whats} onChange={e => setF({ ...f, whats: e.target.value })} /><input type="password" placeholder="Senha de acesso" value={f.senha} onChange={e => setF({ ...f, senha: e.target.value })} /><button className="secondary full" onClick={() => f.negocio && f.senha ? setLogin(true) : alert('Preencha negócio e senha.')}>Entrar no painel</button></div><div><h3>O painel permite</h3><p>Cadastrar evento, foto, categoria, data, endereço, gênero musical, ambiente, lotação, vibe, cashback, combos, bebidas, promoções, cardápio e ver métricas.</p></div></div> : <><div className="form-grid"><div><h3>Cadastrar evento</h3><input placeholder="Nome do evento" value={f.nome} onChange={e => setF({ ...f, nome: e.target.value })} /><select value={f.categoria} onChange={e => setF({ ...f, categoria: e.target.value })}><option>Bombando</option><option>Musica ao vivo</option><option>Gastronomia</option><option>Cultural</option><option>Modo Relax</option><option>Ambiente infantil</option></select><input placeholder="Data e horário" value={f.data} onChange={e => setF({ ...f, data: e.target.value })} /><input placeholder="Endereço" value={f.endereco} onChange={e => setF({ ...f, endereco: e.target.value })} /><input type="file" accept="image/*" onChange={async e => setFoto(await fileToData(e.target.files?.[0]))} />{foto && <img src={foto} style={{ width: '100%', maxHeight: 170, objectFit: 'cover', borderRadius: 18 }} />}<textarea placeholder="Descrição" value={f.desc} onChange={e => setF({ ...f, desc: e.target.value })} /><input placeholder="Gênero musical" value={f.genero} onChange={e => setF({ ...f, genero: e.target.value })} /><input placeholder="Tipo de ambiente" value={f.ambiente} onChange={e => setF({ ...f, ambiente: e.target.value })} /></div><div><h3>Comercial</h3><input placeholder="Lotação estimada" value={f.lotacao} onChange={e => setF({ ...f, lotacao: e.target.value })} /><input placeholder="Vibe" value={f.vibe} onChange={e => setF({ ...f, vibe: e.target.value })} /><input placeholder="Cashback" value={f.cashback} onChange={e => setF({ ...f, cashback: e.target.value })} /><input placeholder="Ingresso ou reserva" value={f.ingresso} onChange={e => setF({ ...f, ingresso: e.target.value })} /><textarea placeholder="Combos — um por linha" value={f.combos} onChange={e => setF({ ...f, combos: e.target.value })} /><textarea placeholder="Bebidas — uma por linha" value={f.bebidas} onChange={e => setF({ ...f, bebidas: e.target.value })} /><textarea placeholder="Promoções — uma por linha" value={f.promocoes} onChange={e => setF({ ...f, promocoes: e.target.value })} /><textarea placeholder="Cardápio — um por linha" value={f.cardapio} onChange={e => setF({ ...f, cardapio: e.target.value })} /><button className="primary full" onClick={publicar}>Publicar evento no PulseAí</button></div></div><h3>Métricas dos eventos</h3><div className="dashboard-grid">{db.eventos.map(e => <article key={e.id}><small>{e.nome}</small><strong>{e.views}</strong><p>views • {e.checkins} check-ins • {e.vendas} vendas • {e.reacoes} reações</p></article>)}</div></>}</Shell>
+    return (
+      <Shell title="Área do parceiro / Painel do estabelecimento" close={close}>
+        {!login ? (
+          <div className="form-grid">
+            <div>
+              <h3>Login do estabelecimento</h3>
+              <input placeholder="Proprietário / dono" value={f.dono} onChange={e => setF({ ...f, dono: e.target.value })} />
+              <input placeholder="Nome do negócio" value={f.negocio} onChange={e => setF({ ...f, negocio: e.target.value })} />
+              <input placeholder="WhatsApp de recebimento" value={f.whats} onChange={e => setF({ ...f, whats: e.target.value })} />
+              <input type="password" placeholder="Senha de acesso" value={f.senha} onChange={e => setF({ ...f, senha: e.target.value })} />
+              <button className="secondary full" onClick={() => f.negocio && f.senha ? setLogin(true) : alert('Preencha negócio e senha.')}>Entrar no painel</button>
+            </div>
+            <div>
+              <h3>O painel permite</h3>
+              <p>Cadastrar evento, foto, categoria, data, endereço, gênero musical, ambiente, lotação, vibe, cashback, combos, bebidas, promoções, cardápio e ver métricas.</p>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="form-grid">
+              <div>
+                <h3>Cadastrar evento</h3>
+                <input placeholder="Nome do evento" value={f.nome} onChange={e => setF({ ...f, nome: e.target.value })} />
+                <select value={f.categoria} onChange={e => setF({ ...f, categoria: e.target.value })}>
+                  <option>Bar / Pub</option>
+                  <option>Restaurante</option>
+                  <option>Casa de show</option>
+                  <option>Produtor de eventos</option>
+                  <option>Cultural</option>
+                  <option>Gastronomia</option>
+                  <option>Ambiente infantil</option>
+                  <option>Modo Relax</option>
+                </select>
+                <input placeholder="Data e horário" value={f.data} onChange={e => setF({ ...f, data: e.target.value })} />
+                <input placeholder="Endereço" value={f.endereco} onChange={e => setF({ ...f, endereco: e.target.value })} />
+                <input type="file" accept="image/*" onChange={async e => setFoto(await fileToData(e.target.files?.[0]))} />
+                {foto && <img src={foto} style={{ width: '100%', maxHeight: 170, objectFit: 'cover', borderRadius: 18 }} />}
+                <textarea placeholder="Descrição" value={f.desc} onChange={e => setF({ ...f, desc: e.target.value })} />
+                <input placeholder="Gênero musical" value={f.genero} onChange={e => setF({ ...f, genero: e.target.value })} />
+                <input placeholder="Ambiente" value={f.ambiente} onChange={e => setF({ ...f, ambiente: e.target.value })} />
+                <input placeholder="Lotação" value={f.lotacao} onChange={e => setF({ ...f, lotacao: e.target.value })} />
+                <input placeholder="Vibe" value={f.vibe} onChange={e => setF({ ...f, vibe: e.target.value })} />
+                <input placeholder="Cashback" value={f.cashback} onChange={e => setF({ ...f, cashback: e.target.value })} />
+                <input placeholder="Ingressos / reserva" value={f.ingresso} onChange={e => setF({ ...f, ingresso: e.target.value })} />
+                <input placeholder="Combos" value={f.combos} onChange={e => setF({ ...f, combos: e.target.value })} />
+                <input placeholder="Bebidas" value={f.bebidas} onChange={e => setF({ ...f, bebidas: e.target.value })} />
+                <input placeholder="Promoções" value={f.promocoes} onChange={e => setF({ ...f, promocoes: e.target.value })} />
+                <input placeholder="Cardápio" value={f.cardapio} onChange={e => setF({ ...f, cardapio: e.target.value })} />
+                <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+                  <button className="primary" onClick={publicar}>Publicar evento</button>
+                  <button className="ghost" onClick={() => setLogin(false)}>Sair do painel</button>
+                </div>
+              </div>
+              <div>
+                <h3>Métricas</h3>
+                <p>Após publicar, veja visualizações, cliques, check-ins, vendas e conversão neste painel.</p>
+              </div>
+            </div>
+          </>
+        )}
+      </Shell>
+    )
 }
 
 function Usuario({ db, setDb, close }: { db: Db; setDb: (d: Db) => void; close: () => void }) {
@@ -55,6 +134,8 @@ function Admin({ db, setDb, close }: { db: Db; setDb: (d: Db) => void; close: ()
   const [ok, setOk] = useState(false)
   const estabelecimentos = new Set(db.eventos.map(e => e.negocio)).size
   const alcance = db.eventos.reduce((a, e) => a + e.alcance, 0)
+  const [key, setKey] = useState('')
+
   const views = db.eventos.reduce((a, e) => a + e.views, 0)
   const checkins = db.eventos.reduce((a, e) => a + e.checkins, 0)
   const cliques = db.eventos.reduce((a, e) => a + e.cliques, 0)
@@ -64,5 +145,44 @@ function Admin({ db, setDb, close }: { db: Db; setDb: (d: Db) => void; close: ()
   const corridasPendentes = db.corridas.filter(c => c.status === 'Pendente').length
   const corridasAceitas = db.corridas.filter(c => c.status === 'Aceita').length
   const conversao = views ? Math.round((vendas / views) * 100) : 0
-  return <Shell title="Admin 🔒 dashboard restrito" close={close}>{!ok ? <><p>Área exclusiva do dono do PulseAí. Entre para acompanhar a operação, aprovar crescimento e validar os KPIs do piloto.</p><input type="password" placeholder="Senha do dono" /><button className="secondary" onClick={() => setOk(true)}>Entrar</button></> : <><div className="dashboard-grid" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}><article><small>Usuários cadastrados</small><strong>{db.usuarios.length}</strong></article><article><small>Estabelecimentos</small><strong>{estabelecimentos}</strong></article><article><small>Eventos publicados</small><strong>{db.eventos.length}</strong></article><article><small>Motoristas totais</small><strong>{db.motoristas.length}</strong></article><article><small>Motoristas online</small><strong>{motoristasOnline}</strong></article><article><small>Corridas pendentes</small><strong>{corridasPendentes}</strong></article><article><small>Corridas aceitas</small><strong>{corridasAceitas}</strong></article><article><small>Alcance total</small><strong>{alcance}</strong></article><article><small>Visualizações</small><strong>{views}</strong></article><article><small>Check-ins</small><strong>{checkins}</strong></article><article><small>Cliques</small><strong>{cliques}</strong></article><article><small>Vendas/reservas</small><strong>{vendas}</strong></article><article><small>Reações</small><strong>{reacoes}</strong></article><article><small>Conversão estimada</small><strong>{conversao}%</strong></article><article><small>Categorias ativas</small><strong>{new Set(db.eventos.map(e => e.categoria)).size}</strong></article><article><small>Base operacional</small><strong>{db.eventos.length + db.motoristas.length + db.usuarios.length}</strong></article></div><div className="form-grid"><div><h3>Eventos e estabelecimentos</h3>{db.eventos.length ? db.eventos.map(e => <div className="will-card" key={e.id}><b>{e.negocio}</b><p>{e.nome}<br />{e.categoria} • {e.endereco}<br />Views {e.views} • Vendas {e.vendas} • Reações {e.reacoes}</p></div>) : <p>Nenhum estabelecimento cadastrado ainda.</p>}</div><div><h3>Motoristas e corridas</h3>{db.motoristas.map(m => <div className="will-card" key={m.id}><b>{m.nome}</b><p>{m.veiculo} • Placa {m.placa}<br />{m.cidade} • {m.disponibilidade} • {m.online ? 'Online' : 'Offline'}</p></div>)}{db.corridas.map(c => <div className="will-card" key={c.id}><b>{c.evento}</b><p>{c.usuario} • {c.tipo}<br />{c.status} {c.motorista ? `com ${c.motorista}` : ''}</p></div>)}</div></div><button className="ghost" onClick={() => { localStorage.removeItem('pulseai_plus'); setDb({ eventos: [], motoristas: [], corridas: [], usuarios: [] }) }}>Resetar dados locais</button></>}</Shell>
+
+  return (
+    <Shell title="Admin 🔒 acesso restrito" close={close}>
+      {!ok ? (
+        <div style={{ padding: 8 }}>
+          <p>Admin 🔒 acesso restrito</p>
+          <p>Área exclusiva do dono do PulseAí.</p>
+          <input type="password" placeholder="Digite a chave de acesso" value={key} onChange={e => setKey(e.target.value)} />
+          <div style={{ marginTop: 8 }}>
+            <button className="secondary" onClick={() => key.trim() ? setOk(true) : alert('Digite a chave de acesso.')}>Entrar no dashboard</button>
+            <button className="ghost" onClick={close} style={{ marginLeft: 8 }}>Fechar</button>
+          </div>
+        </div>
+      ) : (
+        <div>
+          <div className="dashboard-grid" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
+            <article><small>Usuários</small><strong>{db.usuarios.length}</strong></article>
+            <article><small>Estabelecimentos</small><strong>{estabelecimentos}</strong></article>
+            <article><small>Eventos</small><strong>{db.eventos.length}</strong></article>
+            <article><small>Motoristas</small><strong>{db.motoristas.length}</strong></article>
+            <article><small>Motoristas online</small><strong>{motoristasOnline}</strong></article>
+            <article><small>Corridas</small><strong>{db.corridas.length}</strong></article>
+            <article><small>Corridas pendentes</small><strong>{corridasPendentes}</strong></article>
+            <article><small>Corridas aceitas</small><strong>{corridasAceitas}</strong></article>
+            <article><small>Visualizações</small><strong>{views}</strong></article>
+            <article><small>Check-ins</small><strong>{checkins}</strong></article>
+            <article><small>Vendas / reservas</small><strong>{vendas}</strong></article>
+            <article><small>Reações</small><strong>{reacoes}</strong></article>
+            <article><small>Conversão estimada</small><strong>{conversao}%</strong></article>
+            <article><small>Alcance total</small><strong>{alcance}</strong></article>
+            <article><small>Categorias ativas</small><strong>{new Set(db.eventos.map(e => e.categoria)).size}</strong></article>
+            <article><small>Base operacional</small><strong>{db.eventos.length + db.motoristas.length + db.usuarios.length}</strong></article>
+          </div>
+          <div style={{ marginTop: 12 }}>
+            <button className="ghost" onClick={() => { setOk(false); setKey('') }}>Sair do dashboard</button>
+          </div>
+        </div>
+      )}
+    </Shell>
+  )
 }

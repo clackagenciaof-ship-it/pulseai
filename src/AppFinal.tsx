@@ -99,7 +99,13 @@ export default function AppFinal() {
   return <main className="app-shell">
     <header className="topbar">
       <button className="brand" onClick={() => scroll('top')}><PulseLogo /><strong>PulseAí</strong></button>
-      <nav><button onClick={() => scroll('quem-sai')}>Para quem sai</button><button onClick={() => scroll('negocios')}>Para negócios</button><button onClick={() => scroll('motoristas')}>Cadastro de motorista</button><button onClick={() => alert('Admin restrito disponível no painel do dono.')}>Admin 🔒</button><button className="download-top" onClick={() => setModal('baixar')}>Quero baixar</button></nav>
+      <nav>
+        <button type="button">Para quem sai</button>
+        <button type="button">Para negócios</button>
+        <button type="button">Cadastro de motorista</button>
+        <button type="button">Admin 🔒</button>
+        <button className="download-top" onClick={() => setModal('baixar')}>Quero baixar</button>
+      </nav>
     </header>
 
     <section className="hero" id="top">
