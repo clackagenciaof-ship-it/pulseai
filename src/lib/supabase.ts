@@ -1,17 +1,13 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
+const fallbackSupabaseUrl = 'https://uopfvhbblveyhpieiuks.supabase.co';
+const fallbackSupabasePublishableKey = 'sb_publishable_ZDgw-FzT7PCMAcIxh1PwmA_lH2cKOoS';
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  // Em desenvolvimento, isso evita quebra quando o projeto ainda está no modo protótipo.
-  console.warn('Supabase não configurado. Defina VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY no .env.local.');
-}
+const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL as string | undefined) || fallbackSupabaseUrl;
+const supabaseAnonKey =
+  (import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined) || fallbackSupabasePublishableKey;
 
-export const supabase = createClient(
-  supabaseUrl || 'https://example.supabase.co',
-  supabaseAnonKey || 'public-anon-key'
-);
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export type UserRole = 'user' | 'business' | 'driver' | 'admin';
 export type VibeReactionType =
