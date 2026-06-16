@@ -1,0 +1,179 @@
+/* PulseAí — polimento visual e organização da Fase 1 */
+:root{
+  --pulse-dark:#0B0F1A;
+  --pulse-card:rgba(15,21,42,.86);
+  --pulse-line:rgba(255,255,255,.13);
+  --pulse-cyan:#2FD4FF;
+  --pulse-blue:#2563FF;
+  --pulse-purple:#7B5CFF;
+  --pulse-pink:#FF2E8A;
+  --pulse-mint:#00F0D1;
+  --pulse-grad:linear-gradient(135deg,#2FD4FF 0%,#2563FF 35%,#7B5CFF 65%,#FF2E8A 100%);
+}
+
+html{scroll-behavior:smooth;}
+body{overflow-x:hidden;}
+
+/* Marca mais próxima da identidade aprovada: P arredondado + frequência */
+.pulse-mark{
+  position:relative!important;
+  overflow:visible!important;
+  border-radius:28px 32px 32px 28px!important;
+  background:var(--pulse-grad)!important;
+  box-shadow:0 0 34px rgba(47,212,255,.32),0 0 34px rgba(255,46,138,.18)!important;
+  flex:0 0 auto;
+}
+.pulse-mark::after{
+  content:"";
+  position:absolute;
+  left:0;
+  bottom:-12px;
+  width:38%;
+  height:44%;
+  border-radius:0 0 18px 18px;
+  background:linear-gradient(180deg,#2563FF,#1d55ff);
+  box-shadow:0 16px 26px rgba(37,99,255,.22);
+}
+.pulse-mark.small::after{bottom:-7px;border-radius:0 0 10px 10px;}
+.pulse-mark .wave{position:relative;z-index:2;}
+.pulse-mark .wave i{width:4px!important;background:rgba(255,255,255,.92)!important;box-shadow:0 0 12px rgba(255,255,255,.8)!important;}
+
+/* Topo */
+.topbar{min-height:82px!important;align-items:center!important;}
+.brand{white-space:nowrap!important;gap:14px!important;}
+.brand strong{letter-spacing:-.04em;}
+.topbar nav button{white-space:nowrap!important;min-height:44px;display:inline-flex;align-items:center;justify-content:center;}
+.download-top{color:#04101d!important;}
+
+/* Hero com respiro */
+.hero{padding-top:74px!important;padding-bottom:76px!important;align-items:center!important;}
+.hero-copy{min-width:0;}
+.hero h1{margin-bottom:24px!important;}
+.hero-copy p{max-width:720px!important;}
+.actions{align-items:center!important;}
+.actions button{white-space:nowrap!important;min-width:154px;text-align:center;display:inline-flex;align-items:center;justify-content:center;}
+.actions .ghost{min-width:190px;}
+.stats article{min-height:138px;display:flex;flex-direction:column;justify-content:center;}
+
+/* Celular */
+.phone{height:760px!important;min-height:760px!important;max-width:520px!important;}
+.phone-inner{position:relative;}
+.phone-top{gap:12px!important;}
+.phone-top strong{font-size:1.58rem!important;line-height:1!important;display:flex;align-items:center;gap:8px;}
+.phone-view{padding:8px 8px 0 0!important;}
+.phone-section{padding-bottom:10px;}
+.intro-card{min-height:auto!important;padding:18px!important;margin-bottom:16px!important;}
+.intro-card small{font-weight:900;letter-spacing:-.02em;}
+.intro-card span{font-size:clamp(1.65rem,4.8vw,2.1rem)!important;line-height:1!important;margin:3px 0 4px;}
+.intro-card b{font-size:.86rem;line-height:1.35;color:#f5f7ff;}
+.phone h3{font-size:1.35rem;margin:12px 0 8px;letter-spacing:-.03em;}
+.phone h4{margin:18px 0 10px;font-size:.96rem;}
+.search.phone-search{display:grid!important;grid-template-columns:auto 1fr 42px 50px;gap:8px;align-items:center;}
+.search.phone-search input{min-width:0;}
+.search.phone-search button{padding:10px 12px!important;}
+.quick-asks{padding-bottom:10px!important;margin-bottom:10px!important;}
+.quick-asks button{max-width:210px;overflow:hidden;text-overflow:ellipsis;}
+.category-grid{gap:10px!important;}
+.category-grid button,.ride-options button,.reaction-list button{display:flex!important;align-items:center!important;gap:8px!important;min-height:52px;line-height:1.12!important;}
+.category-grid button span{margin-right:0!important;}
+.phone-tabs{position:sticky;bottom:0;z-index:4;background:rgba(6,9,20,.94);backdrop-filter:blur(16px);border-radius:20px 20px 0 0;padding:10px 8px!important;margin-top:8px!important;}
+.phone-tabs button{min-height:56px;line-height:1.05!important;overflow:hidden;}
+.phone-tabs button span{font-size:1rem!important;margin-bottom:2px;}
+.phone-tabs .tab-on{background:linear-gradient(135deg,rgba(0,240,209,.16),rgba(37,99,255,.16),rgba(123,92,255,.22))!important;border:1px solid rgba(47,212,255,.18)!important;}
+
+/* Painel interno do celular */
+.quick-panel{inset:68px 16px 72px!important;border-radius:26px!important;padding:18px!important;overflow:auto;}
+.quick-panel h3{font-size:1.45rem!important;}
+.quick-panel button{min-height:48px;display:flex;align-items:center;}
+
+/* Cards e listas */
+.event-options button,.horizontal-cards button,.phone-menu button,.menu button{overflow:hidden;}
+.event-options button b,.horizontal-cards b,.phone-menu b{line-height:1.18;}
+.event-options button span,.event-options button small{line-height:1.28;}
+.phone-menu{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
+.phone-menu button{min-height:132px;}
+.phone-menu small{display:block;color:#cbd3ef;line-height:1.25;}
+.phone-menu em{font-size:1rem;color:var(--pulse-cyan)!important;}
+.reaction-list{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
+.reaction-list button{min-height:48px;}
+.mini-map{box-shadow:inset 0 0 40px rgba(47,212,255,.08);}
+.pin{filter:drop-shadow(0 0 16px rgba(47,212,255,.32));}
+
+/* Dashboard de descoberta */
+.ecosystem{padding-top:84px!important;padding-bottom:84px!important;}
+.dashboard-shell{border-radius:34px!important;grid-template-columns:220px minmax(0,1fr)!important;}
+.sidebar{gap:12px!important;}
+.sidebar strong{font-size:1.22rem;}
+.sidebar button{font-weight:850!important;min-height:42px;}
+.dash-main{padding:28px!important;min-width:0;}
+.dash-title{gap:18px;}
+.dash-title h2{font-size:clamp(1.8rem,3vw,2.35rem);letter-spacing:-.04em;margin:0;}
+.dash-cards{grid-template-columns:repeat(5,minmax(132px,1fr))!important;gap:12px!important;margin-top:20px;}
+.dash-cards article{min-height:76px;display:flex;flex-direction:column;justify-content:center;}
+.dash-cards article b{display:block;line-height:1.1;font-size:.98rem;}
+.dash-cards article small{display:block;margin-top:4px;color:#d6dcf7!important;line-height:1.18;}
+.dash-grid{grid-template-columns:minmax(280px,1.15fr) minmax(220px,.82fr) minmax(220px,.82fr)!important;gap:18px!important;}
+.big-event{min-height:330px!important;}
+.big-event h3,.big-event h2{font-size:1.55rem!important;line-height:1.15;margin:12px 0 6px;}
+.side-list{min-width:0;}
+.side-list button{grid-template-columns:54px minmax(0,1fr)!important;}
+.side-list b{display:block;line-height:1.12;}
+.side-list small{display:block;color:#d6dcf7;line-height:1.2;margin-top:2px;}
+.map-card{display:flex;flex-direction:column;gap:14px;}
+.map-card .mini-map{height:150px;margin:0;}
+.quick-actions button{min-height:56px;}
+
+/* Seções públicas */
+.public-section{padding-top:90px!important;padding-bottom:90px!important;}
+.public-section h2{max-width:960px;margin-left:auto!important;margin-right:auto!important;letter-spacing:-.055em;}
+.public-section>p{font-size:1.04rem!important;}
+.public-cards{gap:22px!important;}
+.public-cards article{min-height:190px;}
+.public-cards h3{margin:0 0 8px;font-size:1.18rem;}
+.motorista-section .public-cards{justify-content:center!important;}
+.cta-box{padding:28px!important;}
+
+/* Modais e áreas comerciais */
+.modal-back{z-index:1000!important;}
+.modal-card{border-radius:30px!important;background:linear-gradient(180deg,rgba(16,22,44,.98),rgba(11,16,34,.98))!important;}
+.modal-card h3{letter-spacing:-.03em;}
+.modal-card input,.modal-card select,.modal-card textarea{background:#20263a!important;color:#fff!important;border-color:rgba(255,255,255,.17)!important;}
+.modal-card select option{background:#20263a!important;color:#fff!important;}
+.form-grid{align-items:start;}
+.dashboard-grid article{min-height:118px;}
+
+/* Scrollbars PulseAí */
+*{scrollbar-color:#7B5CFF rgba(255,255,255,.08);scrollbar-width:thin;}
+::-webkit-scrollbar{width:10px;height:10px;}
+::-webkit-scrollbar-track{background:rgba(255,255,255,.06);border-radius:999px;}
+::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#2FD4FF,#2563FF,#7B5CFF,#FF2E8A);border-radius:999px;}
+::-webkit-scrollbar-thumb:horizontal{background:linear-gradient(90deg,#2FD4FF,#2563FF,#7B5CFF,#FF2E8A);}
+
+@media(max-width:1120px){
+  .dashboard-shell{grid-template-columns:1fr!important;}
+  .sidebar{display:none!important;}
+  .dash-cards{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
+  .dash-grid{grid-template-columns:1fr!important;}
+}
+@media(max-width:980px){
+  .topbar{position:relative!important;align-items:flex-start!important;}
+  .topbar nav{justify-content:flex-start;}
+  .hero{padding-top:44px!important;}
+  .hero h1{font-size:clamp(3.4rem,12vw,5.4rem)!important;}
+  .phone{justify-self:center;}
+}
+@media(max-width:720px){
+  .topbar{padding:14px 16px!important;}
+  .brand strong{font-size:1.05rem;}
+  .topbar nav{gap:7px;}
+  .topbar nav button{padding:10px 12px;font-size:.82rem;}
+  .hero,.grid,.ecosystem,.public-section{width:min(100% - 24px,1240px)!important;}
+  .hero h1{font-size:clamp(3rem,15vw,4.8rem)!important;}
+  .actions button{width:100%;}
+  .stats{grid-template-columns:1fr!important;}
+  .phone{height:720px!important;min-height:720px!important;border-width:10px!important;border-radius:34px!important;padding:14px!important;}
+  .phone-top strong{font-size:1.35rem!important;}
+  .phone-menu,.category-grid,.reaction-list,.ride-options{grid-template-columns:1fr!important;}
+  .dash-cards{grid-template-columns:1fr!important;}
+  .public-cards{grid-template-columns:1fr!important;}
+}
