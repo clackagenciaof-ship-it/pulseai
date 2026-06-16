@@ -1,4 +1,4 @@
 import './ui.css'
-import AppFinal from './AppFinal'
+import AppPlus from './AppPlus'
 
-export default AppFinal
+export default AppPlus
