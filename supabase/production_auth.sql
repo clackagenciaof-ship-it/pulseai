@@ -1,5 +1,6 @@
--- PulseAí — autenticação e autorização para uso real
--- Execute uma vez no SQL Editor do Supabase.
+-- PulseAí — autenticação e autorização alinhadas ao projeto ativo
+-- Projeto: mkwtqforzirfcxvsqenf
+-- Este arquivo documenta o que já foi aplicado no Supabase.
 
 create or replace function public.is_admin()
 returns boolean
@@ -9,14 +10,16 @@ security definer
 set search_path = public
 as $$
   select exists (
-    select 1 from public.profiles
-    where id = auth.uid() and role = 'admin'
+    select 1
+    from public.profiles
+    where auth_user_id = auth.uid()
+      and role = 'admin'
+      and is_active = true
   );
 $$;
 
 grant execute on function public.is_admin() to authenticated;
 
--- Garante perfil ao criar conta. A função nunca permite criar admin publicamente.
 create or replace function public.handle_new_user()
 returns trigger
 language plpgsql
@@ -24,23 +27,86 @@ security definer
 set search_path = public
 as $$
 declare
-  requested_role public.user_role;
+  requested_role text;
+  new_profile_id uuid;
 begin
   requested_role := case
-    when new.raw_user_meta_data->>'role' = 'business' then 'business'::public.user_role
-    when new.raw_user_meta_data->>'role' = 'driver' then 'driver'::public.user_role
-    else 'user'::public.user_role
+    when new.raw_user_meta_data->>'role' = 'business' then 'negocio'
+    when new.raw_user_meta_data->>'role' = 'driver' then 'motorista'
+    else 'usuario'
   end;
 
-  insert into public.profiles (id, role, full_name, email, city)
-  values (
+  insert into public.profiles (
+    auth_user_id,
+    role,
+    full_name,
+    phone,
+    city,
+    state,
+    is_active
+  ) values (
     new.id,
     requested_role,
     coalesce(nullif(new.raw_user_meta_data->>'full_name',''), split_part(new.email,'@',1)),
-    new.email,
-    'Floriano, PI'
+    nullif(new.raw_user_meta_data->>'phone',''),
+    coalesce(nullif(new.raw_user_meta_data->>'city',''), 'Floriano'),
+    'PI',
+    true
   )
-  on conflict (id) do nothing;
+  on conflict (auth_user_id) do update set
+    full_name = excluded.full_name,
+    phone = coalesce(excluded.phone, public.profiles.phone),
+    city = coalesce(excluded.city, public.profiles.city),
+    updated_at = now()
+  returning id into new_profile_id;
+
+  if requested_role = 'negocio' then
+    insert into public.businesses (
+      owner_profile_id,
+      name,
+      description,
+      categories,
+      address,
+      city,
+      state,
+      phone,
+      whatsapp,
+      is_active
+    ) values (
+      new_profile_id,
+      coalesce(nullif(new.raw_user_meta_data->>'business_name',''), 'Novo estabelecimento'),
+      'Cadastro realizado pelo portal PulseAí.',
+      array[coalesce(nullif(new.raw_user_meta_data->>'category',''), 'Outros')],
+      nullif(new.raw_user_meta_data->>'address',''),
+      coalesce(nullif(new.raw_user_meta_data->>'city',''), 'Floriano'),
+      'PI',
+      nullif(new.raw_user_meta_data->>'phone',''),
+      nullif(new.raw_user_meta_data->>'phone',''),
+      true
+    );
+  elsif requested_role = 'motorista' then
+    insert into public.drivers (
+      profile_id,
+      display_name,
+      phone,
+      vehicle_type,
+      vehicle_label,
+      plate,
+      status,
+      is_active
+    ) values (
+      new_profile_id,
+      coalesce(nullif(new.raw_user_meta_data->>'full_name',''), split_part(new.email,'@',1)),
+      nullif(new.raw_user_meta_data->>'phone',''),
+      nullif(new.raw_user_meta_data->>'vehicle_type',''),
+      nullif(new.raw_user_meta_data->>'vehicle_type',''),
+      upper(nullif(new.raw_user_meta_data->>'plate','')),
+      'offline',
+      true
+    )
+    on conflict (profile_id) do nothing;
+  end if;
+
   return new;
 end;
 $$;
@@ -48,99 +114,37 @@ $$;
 drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
 after insert on auth.users
-for each row execute procedure public.handle_new_user();
+for each row execute function public.handle_new_user();
 
--- Admin pode consultar e gerenciar todos os perfis.
-drop policy if exists "Admin gerencia perfis" on public.profiles;
-create policy "Admin gerencia perfis" on public.profiles
+-- Políticas administrativas aplicadas no projeto.
+drop policy if exists admin_profiles_all on public.profiles;
+create policy admin_profiles_all on public.profiles
 for all to authenticated
 using (public.is_admin())
 with check (public.is_admin());
 
--- Negócios: proprietário e admin.
-drop policy if exists "Admin gerencia negocios" on public.businesses;
-create policy "Admin gerencia negocios" on public.businesses
+drop policy if exists admin_businesses_all on public.businesses;
+create policy admin_businesses_all on public.businesses
 for all to authenticated
 using (public.is_admin())
 with check (public.is_admin());
 
--- Motoristas: o próprio motorista e admin.
-drop policy if exists "Motorista le proprio cadastro" on public.drivers;
-create policy "Motorista le proprio cadastro" on public.drivers
-for select to authenticated
-using (profile_id = auth.uid() or public.is_admin());
-
-drop policy if exists "Motorista cria proprio cadastro" on public.drivers;
-create policy "Motorista cria proprio cadastro" on public.drivers
-for insert to authenticated
-with check (profile_id = auth.uid() and approved = false);
-
-drop policy if exists "Motorista atualiza proprio cadastro" on public.drivers;
-create policy "Motorista atualiza proprio cadastro" on public.drivers
-for update to authenticated
-using (profile_id = auth.uid() or public.is_admin())
-with check (profile_id = auth.uid() or public.is_admin());
-
--- Eventos e itens de cardápio: leitura pública apenas quando publicados/ativos.
-drop policy if exists "Eventos publicados leitura publica" on public.events;
-create policy "Eventos publicados leitura publica" on public.events
-for select to anon, authenticated
-using (status = 'published' or public.is_admin() or exists (
-  select 1 from public.businesses b where b.id = events.business_id and b.owner_id = auth.uid()
-));
-
-drop policy if exists "Parceiro gerencia eventos" on public.events;
-create policy "Parceiro gerencia eventos" on public.events
+drop policy if exists admin_drivers_all on public.drivers;
+create policy admin_drivers_all on public.drivers
 for all to authenticated
-using (public.is_admin() or exists (
-  select 1 from public.businesses b where b.id = events.business_id and b.owner_id = auth.uid()
-))
-with check (public.is_admin() or exists (
-  select 1 from public.businesses b where b.id = events.business_id and b.owner_id = auth.uid()
-));
+using (public.is_admin())
+with check (public.is_admin());
 
-drop policy if exists "Cardapio ativo leitura publica" on public.menu_items;
-create policy "Cardapio ativo leitura publica" on public.menu_items
-for select to anon, authenticated
-using (active = true);
-
-drop policy if exists "Parceiro gerencia cardapio" on public.menu_items;
-create policy "Parceiro gerencia cardapio" on public.menu_items
+drop policy if exists admin_events_all on public.events;
+create policy admin_events_all on public.events
 for all to authenticated
-using (public.is_admin() or exists (
-  select 1 from public.businesses b where b.id = menu_items.business_id and b.owner_id = auth.uid()
-))
-with check (public.is_admin() or exists (
-  select 1 from public.businesses b where b.id = menu_items.business_id and b.owner_id = auth.uid()
-));
+using (public.is_admin())
+with check (public.is_admin());
 
--- Solicitações de transporte.
-drop policy if exists "Usuario cria transporte" on public.transport_requests;
-create policy "Usuario cria transporte" on public.transport_requests
-for insert to authenticated
-with check (user_id = auth.uid());
+drop policy if exists admin_ride_requests_all on public.ride_requests;
+create policy admin_ride_requests_all on public.ride_requests
+for all to authenticated
+using (public.is_admin())
+with check (public.is_admin());
 
-drop policy if exists "Participantes leem transporte" on public.transport_requests;
-create policy "Participantes leem transporte" on public.transport_requests
-for select to authenticated
-using (
-  user_id = auth.uid()
-  or public.is_admin()
-  or exists (select 1 from public.drivers d where d.id = transport_requests.driver_id and d.profile_id = auth.uid())
-  or (status = 'pending' and exists (select 1 from public.drivers d where d.profile_id = auth.uid() and d.approved = true and d.available = true))
-);
-
-drop policy if exists "Motorista atualiza transporte" on public.transport_requests;
-create policy "Motorista atualiza transporte" on public.transport_requests
-for update to authenticated
-using (public.is_admin() or exists (select 1 from public.drivers d where d.profile_id = auth.uid()))
-with check (public.is_admin() or exists (select 1 from public.drivers d where d.profile_id = auth.uid()));
-
--- Admin consulta métricas completas.
-drop policy if exists "Admin le analytics" on public.analytics_events;
-create policy "Admin le analytics" on public.analytics_events
-for select to authenticated
-using (public.is_admin());
-
--- Torne a sua conta administradora manualmente após criar o login:
--- update public.profiles set role = 'admin' where email = 'SEU_EMAIL_AQUI';
+-- Conta proprietária já definida como admin no banco ativo.
