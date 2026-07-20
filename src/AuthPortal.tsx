@@ -1,33 +1,40 @@
 import { FormEvent, useMemo, useState } from 'react'
 import { ArrowLeft, Building2, Car, Eye, EyeOff, LockKeyhole, Mail, MapPin, Phone, ShieldCheck, UserRound } from 'lucide-react'
-import { supabase, type UserRole } from './lib/supabase'
+import { supabase, type AuthRole, type UserRole } from './lib/supabase'
 import './auth.css'
 
-type Props = { forcedRole?: UserRole }
+type Props = { forcedRole?: AuthRole }
 
-const labels: Record<UserRole, { title: string; description: string; icon: typeof UserRound }> = {
+const labels: Record<AuthRole, { title: string; description: string; icon: typeof UserRound }> = {
   user: { title: 'Para quem sai', description: 'Crie seu perfil e descubra o que está pulsando em Floriano.', icon: UserRound },
   business: { title: 'Negócios', description: 'Cadastre seu estabelecimento e gerencie eventos, cardápios, combos e métricas.', icon: Building2 },
   driver: { title: 'Motoristas', description: 'Cadastre-se para receber solicitações ligadas à movimentação da cidade.', icon: Car },
   admin: { title: 'Admin', description: 'Acesso restrito ao proprietário e à gestão do PulseAí.', icon: ShieldCheck },
 }
 
+const roleMap: Record<AuthRole, UserRole> = {
+  user: 'usuario',
+  business: 'negocio',
+  driver: 'motorista',
+  admin: 'admin',
+}
+
 function destination(role: UserRole) {
-  if (role === 'business') return '/parceiro'
-  if (role === 'driver') return '/motorista'
+  if (role === 'negocio') return '/parceiro'
+  if (role === 'motorista') return '/motorista'
   if (role === 'admin') return '/admin'
   return '/app'
 }
 
 export default function AuthPortal({ forcedRole }: Props) {
   const search = new URLSearchParams(window.location.search)
-  const initialRole = forcedRole || (search.get('role') as UserRole) || 'user'
-  const [role, setRole] = useState<UserRole>(initialRole)
+  const initialRole = forcedRole || (search.get('role') as AuthRole) || 'user'
+  const [role, setRole] = useState<AuthRole>(initialRole)
   const [mode, setMode] = useState<'login' | 'register'>('register')
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
-  const [form, setForm] = useState({ fullName: '', email: '', phone: '', city: 'Floriano, PI', address: '', password: '', businessName: '', category: 'Restaurante', vehicleType: 'carro', plate: '' })
+  const [form, setForm] = useState({ fullName: '', email: '', phone: '', city: 'Floriano', address: '', password: '', businessName: '', category: 'Restaurante', vehicleType: 'carro', plate: '' })
   const meta = useMemo(() => labels[role], [role])
   const Icon = meta.icon
 
@@ -39,64 +46,42 @@ export default function AuthPortal({ forcedRole }: Props) {
       if (mode === 'login') {
         const { data, error } = await supabase.auth.signInWithPassword({ email: form.email.trim(), password: form.password })
         if (error) throw error
-        const { data: profile, error: profileError } = await supabase.from('profiles').select('role').eq('id', data.user.id).single()
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('auth_user_id', data.user.id)
+          .single()
         if (profileError) throw profileError
         window.location.href = destination(profile.role as UserRole)
         return
       }
 
       if (role === 'admin') throw new Error('Contas administrativas não podem ser criadas publicamente.')
+
       const { data, error } = await supabase.auth.signUp({
         email: form.email.trim(),
         password: form.password,
-        options: { data: { full_name: form.fullName.trim(), role } },
+        options: {
+          data: {
+            full_name: form.fullName.trim(),
+            role,
+            phone: form.phone.trim(),
+            city: form.city.trim(),
+            address: form.address.trim(),
+            business_name: form.businessName.trim(),
+            category: form.category,
+            vehicle_type: form.vehicleType,
+            plate: form.plate.trim().toUpperCase(),
+          },
+        },
       })
       if (error) throw error
       if (!data.user) throw new Error('Não foi possível criar o usuário.')
 
-      const { error: profileError } = await supabase.from('profiles').upsert({
-        id: data.user.id,
-        role,
-        full_name: form.fullName.trim(),
-        email: form.email.trim(),
-        phone: form.phone.trim(),
-        city: form.city.trim(),
-        residential_address: form.address.trim() || null,
-      })
-      if (profileError) throw profileError
-
-      if (role === 'business') {
-        const { error: businessError } = await supabase.from('businesses').insert({
-          owner_id: data.user.id,
-          owner_name: form.fullName.trim(),
-          name: form.businessName.trim(),
-          category: form.category,
-          whatsapp: form.phone.trim(),
-          address: form.address.trim(),
-          city: form.city.trim(),
-          status: 'pending',
-        })
-        if (businessError) throw businessError
-      }
-
-      if (role === 'driver') {
-        const { error: driverError } = await supabase.from('drivers').insert({
-          profile_id: data.user.id,
-          full_name: form.fullName.trim(),
-          phone: form.phone.trim(),
-          city: form.city.trim(),
-          vehicle_type: form.vehicleType,
-          plate: form.plate.trim().toUpperCase(),
-          available: false,
-          approved: false,
-        })
-        if (driverError) throw driverError
-      }
-
       if (!data.session) {
         setMessage('Cadastro criado. Confirme o e-mail enviado pelo PulseAí e depois entre na sua conta.')
       } else {
-        window.location.href = destination(role)
+        window.location.href = destination(roleMap[role])
       }
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Não foi possível concluir. Tente novamente.')
@@ -116,7 +101,7 @@ export default function AuthPortal({ forcedRole }: Props) {
           <h1>{meta.title}</h1>
           <p>{meta.description}</p>
           <div className="auth-role-list">
-            {(['user','business','driver','admin'] as UserRole[]).map(item => {
+            {(['user','business','driver','admin'] as AuthRole[]).map(item => {
               const ItemIcon = labels[item].icon
               return <button key={item} className={role === item ? 'active' : ''} onClick={() => { setRole(item); setMode(item === 'admin' ? 'login' : mode); setMessage('') }}><ItemIcon size={19}/><span>{labels[item].title}</span></button>
             })}
