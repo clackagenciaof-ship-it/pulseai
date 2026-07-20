@@ -17,7 +17,11 @@ export default function ProtectedArea({ allowed, children }: Props) {
         window.location.href = `/entrar?redirect=${encodeURIComponent(window.location.pathname)}`
         return
       }
-      const { data, error: profileError } = await supabase.from('profiles').select('*').eq('id', session.user.id).single()
+      const { data, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('auth_user_id', session.user.id)
+        .single()
       if (!active) return
       if (profileError || !data) {
         setError('Seu perfil não foi encontrado. Entre novamente ou conclua o cadastro.')
@@ -47,5 +51,5 @@ export default function ProtectedArea({ allowed, children }: Props) {
   if (loading) return <main className="protected-state"><div className="protected-card"><span className="loader"/><h2>Carregando seu painel...</h2></div></main>
   if (error || !profile) return <main className="protected-state"><div className="protected-card"><ShieldAlert/><h2>Acesso não autorizado</h2><p>{error}</p><button onClick={() => window.location.href='/entrar'}>Ir para login</button></div></main>
 
-  return <div className="protected-layout"><header><div><strong>PulseAí</strong><small>{profile.full_name} • {profile.role}</small></div><button onClick={logout}><LogOut size={18}/> Sair</button></header>{children(profile)}</div>
+  return <div className="protected-layout"><header><div><strong>PulseAí</strong><small>{profile.full_name || 'Usuário'} • {profile.role}</small></div><button onClick={logout}><LogOut size={18}/> Sair</button></header>{children(profile)}</div>
 }
